@@ -109,7 +109,12 @@ class Vimeo extends React.Component {
   createPlayer() {
     const { start, volume } = this.props;
 
-    this.player = new Player(this.container, this.getInitialOptions());
+    this.player = new Player(this.container, this.getInitialOptions()).ready().catch((error) => {
+      const handler = this.props.onError;
+      if (handler) {
+        handler(error);
+      }
+    });
 
     Object.keys(eventNames).forEach((dmName) => {
       const reactName = eventNames[dmName];
