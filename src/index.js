@@ -22,7 +22,9 @@ class Vimeo extends React.Component {
   }
 
   componentWillUnmount() {
-    this.player.destroy();
+    if (typeof this.player.destroy === 'function') {
+      this.player.destroy();
+    }
   }
 
   /**
@@ -109,12 +111,7 @@ class Vimeo extends React.Component {
   createPlayer() {
     const { start, volume } = this.props;
 
-    this.player = new Player(this.container, this.getInitialOptions()).ready().catch((error) => {
-      const handler = this.props.onError;
-      if (handler) {
-        handler(error);
-      }
-    });
+    this.player = new Player(this.container, this.getInitialOptions());
 
     Object.keys(eventNames).forEach((dmName) => {
       const reactName = eventNames[dmName];
@@ -127,12 +124,17 @@ class Vimeo extends React.Component {
       });
     });
 
-    const { onReady } = this.props;
-    if (onReady) {
-      this.player.ready().then(() => {
+    const { onReady, onError } = this.props;
+
+    this.player.ready().then(() => {
+      if (onReady) {
         onReady(this.player);
-      });
-    }
+      }
+    }).catch((err) => {
+      if (onError) {
+        onError(err);
+      }
+    });
 
     if (typeof start === 'number') {
       this.player.setCurrentTime(start);
