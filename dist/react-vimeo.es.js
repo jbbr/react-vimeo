@@ -61,7 +61,9 @@ function (_React$Component) {
   };
 
   _proto.componentWillUnmount = function componentWillUnmount() {
-    this.player.destroy();
+    if (typeof this.player.destroy === 'function') {
+      this.player.destroy();
+    }
   }
   /**
    * @private
@@ -165,13 +167,7 @@ function (_React$Component) {
     var _this$props = this.props,
         start = _this$props.start,
         volume = _this$props.volume;
-    this.player = new Player(this.container, this.getInitialOptions()).ready()["catch"](function (error) {
-      var handler = _this4.props.onError;
-
-      if (handler) {
-        handler(error);
-      }
-    });
+    this.player = new Player(this.container, this.getInitialOptions());
     Object.keys(eventNames).forEach(function (dmName) {
       var reactName = eventNames[dmName];
 
@@ -184,13 +180,18 @@ function (_React$Component) {
         }
       });
     });
-    var onReady = this.props.onReady;
-
-    if (onReady) {
-      this.player.ready().then(function () {
+    var _this$props2 = this.props,
+        onReady = _this$props2.onReady,
+        onError = _this$props2.onError;
+    this.player.ready().then(function () {
+      if (onReady) {
         onReady(_this4.player);
-      });
-    }
+      }
+    })["catch"](function (err) {
+      if (onError) {
+        onError(err);
+      }
+    });
 
     if (typeof start === 'number') {
       this.player.setCurrentTime(start);
@@ -210,9 +211,9 @@ function (_React$Component) {
   };
 
   _proto.render = function render() {
-    var _this$props2 = this.props,
-        id = _this$props2.id,
-        className = _this$props2.className;
+    var _this$props3 = this.props,
+        id = _this$props3.id,
+        className = _this$props3.className;
     return React.createElement("div", {
       id: id,
       className: className,
